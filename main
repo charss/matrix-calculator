@@ -1,0 +1,223 @@
+import math
+
+
+def get_matrix(text=""):
+    matrix = []
+    print("Enter size of", text, "matrix:", end=" ")
+    row, column = input().split(" ")
+    print("Enter", text, "matrix:")
+    for x in range(int(row)):
+        matrix.append(input().split(' '))
+    return matrix
+
+
+def matrix_add():
+    matrix1 = get_matrix("first")
+    matrix2 = get_matrix("second")
+    print("The result is:")
+    if len(matrix1) == len(matrix2) and len(matrix1[0]) == len(matrix2[0]):
+        for i in range(len(matrix1)):
+            for j in range(len(matrix1[0])):
+                print(str(float(matrix1[i][j]) + float(matrix2[i][j])), end=" ")
+            print()
+    else:
+        print("The operation cannot be performed")
+
+
+def matrix_multi():
+    matrix1 = get_matrix("first")
+    matrix2 = get_matrix("second")
+    print("The result is:")
+    if len(matrix2) == len(matrix1[0]):
+        for i in matrix1:
+            col = 0
+            while col < len(matrix2[0]):
+                total = 0
+                j = [x[col] for x in matrix2]
+                for x, y in zip(i, j):
+                    total += float(x) * float(y)
+                print(total, end=" ")
+                col += 1
+            print()
+    else:
+        print("The operation cannot be performed")
+
+
+def scalar_multi():
+    matrix1 = get_matrix()
+    scalar = int(input())
+    print("The result is:")
+    for i in range(len(matrix1)):
+        for j in range(len(matrix1[0])):
+            print(str(int(matrix1[i][j]) * scalar), end=" ")
+        print()
+
+
+def matrix_transpose(ans):
+    if ans == 1:
+        matrix1 = get_matrix()
+        x = main_diagonal_trans(matrix1)
+        for row in x:
+            print(*row)
+    elif ans == 2:
+        matrix1 = get_matrix()[::-1]
+        temp = [x[::-1] for x in matrix1]
+        x = main_diagonal_trans(temp)
+        for row in x:
+            print(*row)
+    elif ans == 3:
+        matrix1 = get_matrix()
+        for x in matrix1:
+            print(*(x[::-1]))
+    elif ans == 4:
+        matrix1 = get_matrix()
+        for x in matrix1[::-1]:
+            print(*x)
+
+
+def main_diagonal_trans(matrix):
+    col = 0
+    abc = []
+    while col < len(matrix):
+        temp = [x[col] for x in matrix]
+        abc.append(temp)
+        col += 1
+    return abc
+
+
+def determinant(matrix=None, total=0):
+    if matrix is None:
+        matrix = []
+
+    if len(matrix) == 2:
+        val = (float(matrix[0][0]) * float(matrix[1][1])) - (float(matrix[0][1]) * float(matrix[1][0]))
+        return val
+    elif len(matrix) == 1:
+        return float(matrix[0][0])
+    else:
+        for i, num in enumerate(matrix[0]):
+            matrix_copy = [x[:] for x in matrix[1:]]
+            if i % 2 == 0:
+                num = float(num) * 1
+            else:
+                num = float(num) * -1
+            for j in matrix_copy:
+                j.pop(i)
+            temp = determinant(matrix_copy)
+            total += num * temp
+    return total
+
+
+def adjugate(matrix=None, fin_matrix=[], det=0, total=0):
+    if matrix is None:
+        matrix = []
+
+    if len(matrix) == 3:
+        temp_matrix = [x[:] for x in matrix[:]]
+        for i, row in enumerate(matrix):
+            matrix_copy = [x[:] for x in matrix if x != row]
+            for j, item in enumerate(row):
+                matrix2 = [x[:] for x in matrix_copy[:]]
+                for x in matrix2:
+                    x.pop(j)
+                temp = (float(matrix2[0][0]) * float(matrix2[1][1])) - (float(matrix2[0][1]) * float(matrix2[1][0]))
+                temp /= det
+                temp = float_int(temp)
+                temp_matrix[i][j] = (-1) ** (i + j) * temp
+        temp_matrix = main_diagonal_trans(temp_matrix)
+        return temp_matrix
+    elif len(matrix) > 3:
+        for i, row in enumerate(matrix):
+            matrix_copy = [x[:] for x in matrix if x != row]
+            for j, item in enumerate(row):
+                matrix2 = [x[:] for x in matrix_copy[:]]
+                for x in matrix2:
+                    x.pop(j)
+                temp = determinant(matrix2) / det
+                temp = float_int(temp)
+                fin_matrix[i][j] = (-1) ** (i + j) * temp
+                # print(item, matrix2, end=" ")
+                # print(fin_matrix[i][j])
+
+    return main_diagonal_trans(fin_matrix)
+
+
+def float_int(x):
+    if x == -0.0:
+        x = 0
+    else:
+        x = int(x * 100) / 100
+    x = str(x)
+    if x[x.index('.') + 1:] == '0':
+        x = int(float(x))
+    else:
+        x = int(float(x) * 100) / 100
+    return x
+
+
+def adjugate_two_by_two(matrix, det):
+    temp = [[0, 0], [0, 0]]
+    a = matrix[0][0]
+    matrix[0][0] = matrix[1][1]
+    matrix[1][1] = a
+    for i in range(len(matrix)):
+        for j in range(len(matrix[0])):
+            temp[i][j] = (((-1) ** (i + j)) * float(matrix[i][j])) / det
+
+    # temp = [[((-1 ** (i + j)) * float(matrix[i][j])) / det for i in range(len(matrix))] for j in range(len(matrix[0]))]
+    return temp
+
+
+def inverse():
+    matrix = get_matrix()
+    matrix2 = [x[:] for x in matrix[:]]
+    # matrix = main_diagonal_trans(matrix)
+    det = determinant(matrix)
+    if det == 0:
+        print("This matrix doesn't have an inverse.")
+    elif len(matrix) == 2:
+        matrix = adjugate_two_by_two(matrix, det)
+    elif len(matrix) > 2:
+        matrix = adjugate(matrix, matrix2, det)
+    print("The result is:")
+    for row in matrix:
+        for y in row:
+            print(y, end=" ")
+        print()
+
+
+def main():
+    print("1. Add Matrices")
+    print("2. Multiply matrix by a constant")
+    print("3. Multiply matrices")
+    print("4. Transpose matrix")
+    print("5. Calculate a determinant")
+    print("6. Inverse matrix")
+    print("0. Exit")
+    x = input("Your choice: ")
+    return int(x)
+
+
+while True:
+    ans = main()
+
+    if ans == 1:
+        matrix_add()
+    elif ans == 2:
+        scalar_multi()
+    elif ans == 3:
+        matrix_multi()
+    elif ans == 4:
+        print("1. Main diagonal")
+        print("2. Side diagonal")
+        print("3. Vertical line")
+        print("4. Horizontal line")
+        ans = int(input("Your choice: "))
+        matrix_transpose(ans)
+    elif ans == 5:
+        matrix1 = get_matrix()
+        print('The result is: \n', determinant(matrix1), sep="")
+    elif ans == 6:
+        inverse()
+    elif ans == 0:
+        break
